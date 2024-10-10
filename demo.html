@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="zh-cn">
+<head>
+    <meta charset="UTF-8">
+    <title>API 表单提交</title>
+</head>
+<body>
+    <h1>API 表单提交</h1>
+
+    <!-- 健康检查表单 -->
+    <form id="healthForm">
+        <button type="button" onclick="checkHealth()">健康检查</button>
+    </form>
+
+    <!-- Tokenize 表单 -->
+    <form id="tokenizeForm">
+        <label for="tokenizeText">输入文本:</label>
+        <input type="text" id="tokenizeText" name="text">
+        <button type="button" onclick="tokenize()">Tokenize</button>
+    </form>
+
+    <!-- Detokenize 表单 -->
+    <form id="detokenizeForm">
+        <label for="detokenizeTokens">输入 Tokens (用逗号分隔):</label>
+        <input type="text" id="detokenizeTokens" name="tokens">
+        <button type="button" onclick="detokenize()">Detokenize</button>
+    </form>
+
+    <!-- Chat Completion 表单 -->
+    <form id="chatCompletionForm">
+        <label for="chatPrompt">输入聊天提示:</label>
+        <input type="text" id="chatPrompt" name="prompt">
+        <button type="button" onclick="createChatCompletion()">发送聊天请求</button>
+    </form>
+
+    <div id="response"></div>
+
+    <script>
+        const apiUrl = 'http://117.50.222.139:33355'; // 替换为你的服务器地址
+    
+        async function checkHealth() {
+            const response = await fetch(`${apiUrl}/health`);
+            const text = await response.text();
+            document.getElementById('response').innerText = `健康检查响应: ${response.status} ${text}`;
+        }
+    
+        async function tokenize() {
+            const text = document.getElementById('tokenizeText').value;
+            const model = 'diangpt'; // 替换为你的模型名称
+            const prompt = text; // 假设输入文本即为 prompt
+            const response = await fetch(`${apiUrl}/tokenize`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ model, prompt })
+            });
+            const json = await response.json();
+            document.getElementById('response').innerText = `Tokenize 响应: ${response.status} ${JSON.stringify(json)}`;
+        }
+    
+        async function detokenize() {
+            const tokens = document.getElementById('detokenizeTokens').value.split(',').map(Number);
+            const model = 'diangpt'; // 替换为你的模型名称
+            const response = await fetch(`${apiUrl}/detokenize`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ model, tokens })
+            });
+            const json = await response.json();
+            document.getElementById('response').innerText = `Detokenize 响应: ${response.status} ${JSON.stringify(json)}`;
+        }
+
+        async function createChatCompletion() {
+            const prompt = document.getElementById('chatPrompt').value;
+            const model = 'diangpt'; // 替换为你的模型名称
+            const messages = [{ role: 'user', content: prompt }]; // 假设用户输入即为消息内容
+            const response = await fetch(`${apiUrl}/v1/chat/completions`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ model, messages })
+            });
+            const json = await response.json();
+            document.getElementById('response').innerText = `Chat Completion 响应: ${response.status} ${JSON.stringify(json)}`;
+        }
+        
+    </script>
+</body>
+</html>
